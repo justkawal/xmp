@@ -1,0 +1,12 @@
+name: xmp
+description: XMP module helps to extract xmp data from images.
+version: 1.0.0
+homepage: https://github.com/justkawal/xmp
+
+environment:
+  sdk: '>=2.9.3 <3.0.0'
+
+dependencies:
+  xml: ^4.5.1
+
+#dev_dependencies:
