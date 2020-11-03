@@ -42,7 +42,10 @@
     * [Imports](#imports)
     * [Read image file](#read-image-file)
     * [Read image file from Asset Folder](#read-image-from-flutters-asset-folder)
-    * [Extract Exif Data](#extract-exif-data)
+    * [Extract XMP Data](#extract-xmp-data)
+    * [Parsed XMP Result](#parsed-xmp-result)
+    * [Extract RAW XMP Data](#extract-raw-xmp-data)
+    * [Parsed RAW XMP Result](#parsed-raw-xmp-result)
     * [Saving Exif Content into File](#saving-exif-content-into-file)
   - [Donate (Be the First one)](#donate)
 
@@ -102,35 +105,157 @@ var bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
     
 ````
 
-### Extract Exif Data
+### Extract XMP Data
     
 ````dart
 var result = XMP.extract(bytes);
 saveFile(image, result);
     
 ````
-### Result
+### Parsed XMP Result
 ````json
 {
-    "raw": {
-        "MicrosoftPhoto:LastKeywordXMP": [
-            "tag1",
-            "tag2"
-        ],
-        "MicrosoftPhoto:Rating": "50",
-        "xmp:Rating": "3",
-        "dc:title": "Title",
-        "dc:description": "Title",
-        "dc:subject": "tag2"
-    },
-    "keywords": [
-        "tag1",
-        "tag2"
+    "XMP Tool Kit": "Adobe XMP Core 5.6-c140 79.160451, 2017/05/06-01:08:21",
+    "Marked": "False",
+    "Web Statement": "Copyright Info URL Field",
+    "Location": "Sublocation Field",
+    "Intellectual Genre": "Intellectual Genre Field",
+    "Genre": "Genre Field",
+    "Release Date": "Release Date Field",
+    "Composer": "Composer Field",
+    "Engineer": "Engineer Field",
+    "....": ".....",
+    "....": ".....",
+    "....": ".....",
+    "................Some More XMP Data.........":".... Blah Blah Blah Values .....",
+    "....": ".....",
+    "....": ".....",
+    "....": ".....",
+    "Whites 2012": "+40",
+    "Blacks 2012": "-10",
+    "Texture": "0",
+    "Clarity 2012": "0",
+    "Dehaze": "0",
+    "Vibrance": "0",
+    "Saturation Adjustment Yellow": "0",
+    "Saturation Adjustment Green": "0",
+    "Saturation Adjustment Aqua": "0",
+    "Title": "Title Field",
+    "Description": "Caption Field",
+    "Creator": "Creator Field",
+    "Subject": [
+        "4K",
+        "Mountains",
+        "Sky",
+        "Wallpaper"
     ],
-    "rating": 3,
-    "title": "Title",
-    "description": "Title",
-    "subject": "tag2"
+    "Rights": "Copyright Field",
+    "Usage Terms": "Rights Usage Terms Field",
+    "Scene": [
+        "Scene Field",
+        "IPTC Scene Code Field"
+    ],
+    "Subject Code": "IPTC Subject Code Field",
+    "Supplemental Categories": "Other Category Field",
+    "Property Release ID": "Release ID Field",
+    "Tone Curve PV 2012": [
+        "0, 0",
+        "255, 255"
+    ],
+    "Tone Curve PV 2012 Red": [
+        "0, 0",
+        "255, 255"
+    ],
+    "Tone Curve PV 2012 Green": [
+        "0, 0",
+        "255, 255"
+    ],
+    "Tone Curve PV 2012 Blue": [
+        "0, 0",
+        "255, 255"
+    ],
+    "Hierarchical Subject": [
+        "4K",
+        "Mountains",
+        "Sky",
+        "Wallpaper"
+    ]
+}
+````
+
+### Extract RAW XMP Data
+    
+````dart
+var result = XMP.extract(bytes, raw: true);
+saveFile(image, result);
+    
+````
+### Parsed RAW XMP Result
+````json
+{
+    "x:xmptk": "Adobe XMP Core 5.6-c140 79.160451, 2017/05/06-01:08:21",
+    "dc:format": "image/jpeg",
+    "xmpRights:Marked": "False",
+    "xmpRights:WebStatement": "Copyright Info URL Field",
+    "Iptc4xmpCore:Location": "Sublocation Field",
+    "Iptc4xmpCore:IntellectualGenre": "Intellectual Genre Field",
+    "Iptc4xmpCore:CountryCode": "BR",
+    "photoshop:AuthorsPosition": "Job Title Field",
+    "photoshop:Headline": "Headline Field",
+    "photoshop:CaptionWriter": "Description Writer Field",
+    "photoshop:Category": "Category Field",
+    "photoshop:DateCreated": "2020-11-01",
+    "photoshop:City": "City Field",
+    "xmp:Rating": "5",
+    "xmp:MetadataDate": "2020-11-01T16:00:39-03:00",
+    "crs:Version": "13.0",
+    "crs:ProcessVersion": "11.0",
+    "crs:WhiteBalance": "Auto",
+    "crs:IncrementalTemperature": "+20",
+    "crs:IncrementalTint": "+20",
+    "crs:Exposure2012": "0.00",
+    "crs:Contrast2012": "0",
+    "crs:Highlights2012": "-30",
+    "....": ".....",
+    "....": ".....",
+    "....": ".....",
+    "................Some More XMP Data.........":".... Blah Blah Blah Values .....",
+    "....": ".....",
+    "....": ".....",
+    "....": ".....",
+    "dc:subject": [
+        "4K",
+        "Mountains",
+        "Sky",
+        "Wallpaper"
+    ],
+    "dc:rights": "Copyright Field",
+    "xmpRights:UsageTerms": "Rights Usage Terms Field",
+    "Iptc4xmpCore:Scene": "IPTC Scene Code Field",
+    "plus:ModelReleaseID": "Release Id Field",
+    "plus:PropertyReleaseID": "Release ID Field",
+    "crs:ToneCurvePV2012": [
+        "0, 0",
+        "255, 255"
+    ],
+    "crs:ToneCurvePV2012Red": [
+        "0, 0",
+        "255, 255"
+    ],
+    "crs:ToneCurvePV2012Green": [
+        "0, 0",
+        "255, 255"
+    ],
+    "crs:ToneCurvePV2012Blue": [
+        "0, 0",
+        "255, 255"
+    ],
+    "lr:hierarchicalSubject": [
+        "4K",
+        "Mountains",
+        "Sky",
+        "Wallpaper"
+    ]
 }
 ````
 
