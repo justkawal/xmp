@@ -53,7 +53,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  xmp: ^1.0.0
+  xmp:
 ```
 
 ### 2. Install it
@@ -140,7 +140,6 @@ saveFile(image, result);
 void saveFile(String fileName, dynamic exifContent) {
   File('${path}$fileName.json').writeAsStringSync(jsonEncode(exifContent));
 }
-    
 ````
 
 #### Also checkout our other libraries on: 
