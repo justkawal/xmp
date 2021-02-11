@@ -4,19 +4,19 @@ class XMP {
   ///
   ///Extracts `XMP Data` from the image
   ///
-  ///````
+  ///```
   /// Map result = XMP.extract(bytes);
   /// print(result.toString());
   ///
-  ///````
+  ///```
   ///                 or
   ///Extracts `XMP RAW Data` from the image
   ///
-  ///````
+  ///```
   /// Map result = XMP.extract(bytes, raw: true);
   /// print(result.toString());
   ///
-  ///````
+  ///```
   static Map<String, dynamic> extract(Uint8List source, {bool raw = false}) {
     if (source is! Uint8List) {
       throw Exception('Not a Uint8List');
@@ -56,7 +56,7 @@ class XMP {
                       .toList();
                   textList.forEach((text) {
                     _addAttributeList(
-                        raw ? tag : _camelToNormal(tag), text.text, result);
+                        raw ? tag : camelToNormal(tag), text.text, result);
                   });
                 });
               }
@@ -99,7 +99,7 @@ class XMP {
         if (value != '') {
           result[(raw
                   ? '$endName'
-                  : '${_camelToNormal(headerName)} ${_camelToNormal(endName)}')
+                  : '${camelToNormal(headerName)} ${camelToNormal(endName)}')
               .toString()
               .trim()] = value;
         }
@@ -113,7 +113,7 @@ class XMP {
     });
   }
 
-  static String _camelToNormal(String text) {
+  static String camelToNormal(String text) {
     if (text == null || text.isEmpty) {
       return '';
     }
@@ -122,7 +122,7 @@ class XMP {
       text = text.split(':')[1];
     }
     // capitalize first letter
-    text = _capitalize(text);
+    text = text.capitalize;
 
     // fetch from replacement for exceptional cases
     var replace = _replacement[text];
@@ -130,18 +130,7 @@ class XMP {
       return replace;
     }
 
-    // regExp for converting camel Case to normal case
-    RegExp exp = RegExp(
-        r'((?<=[a-z])[0-9])|((?<=[0-9])[a-z])|((?<=[A-Z])[0-9])|((?<=[0-9])[A-Z])|((?<=[a-z])[A-Z])');
-    String result = text.replaceAllMapped(exp, (Match m) => (' ' + m.group(0)));
-    return _capitalize(result);
-  }
-
-  static String _capitalize(String text) {
-    if (text == null || text == '') {
-      return '';
-    }
-    return text[0].toUpperCase() + text.substring(1);
+    return text.nameCase();
   }
 
   static void _addAttributeList(
