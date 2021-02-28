@@ -22,7 +22,7 @@ class XMP {
       throw Exception('Not a Uint8List');
     } else {
       var result = <String, dynamic>{};
-      var buffer = utf8.decode(source, allowMalformed: true);
+      var buffer = latin1.decode(source, allowInvalid: false);
       int offsetBegin = buffer.indexOf(_markerBegin);
       if (offsetBegin != -1) {
         int offsetEnd = buffer.indexOf(_markerEnd);
@@ -75,34 +75,37 @@ class XMP {
   static void _addAttribute(
       Map<String, dynamic> result, XmlElement element, bool raw) {
     var attributeList = element.attributes.toList();
-    var temporaryElement = element;
-    var temporaryName = temporaryElement.name.toString().toLowerCase();
 
-    while (!_envelopeTags.every((element) => element != temporaryName)) {
-      temporaryElement = temporaryElement.parentElement;
-      if (temporaryElement == null) {
-        break;
+    var headerName;
+
+    if (!raw) {
+      var temporaryElement = element;
+      var temporaryName = temporaryElement.name.toString().toLowerCase();
+
+      while (!_envelopeTags.every((element) => element != temporaryName)) {
+        temporaryElement = temporaryElement.parentElement;
+        if (temporaryElement == null) {
+          break;
+        }
+        temporaryName = temporaryElement?.name?.toString()?.toLowerCase();
       }
-      temporaryName = temporaryElement?.name?.toString()?.toLowerCase();
-    }
-    var headerName = (temporaryElement?.name ?? element.name).toString();
-    if (headerName == 'null') {
-      throw Exception(
-          'If you find this exception, then PLEASE take the pain to post the issue with sample on https://github.com/justkawal/xmp.git. \n\n\t\t\t Thanks for improving ```OpEn SouRce CoMmUniTy```');
+      headerName = (temporaryElement?.name ?? element.name).toString();
+      if (headerName == 'null') {
+        throw Exception(
+            'If you find this exception, then PLEASE take the pain to post the issue with sample on https://github.com/justkawal/xmp.git. \n\n\t\t\t Thanks for improving ```OpEn SouRce CoMmUniTy```');
+      }
     }
 
     attributeList.forEach((attribute) {
       var attr = attribute.name.toString();
       if (!attr.contains('xmlns:') && !attr.contains('xml:')) {
         var endName = attribute.name.toString();
-        var value = attribute.value.toString().trim();
-        if (value != '') {
-          result[(raw
-                  ? '$endName'
-                  : '${camelToNormal(headerName)} ${camelToNormal(endName)}')
-              .toString()
-              .trim()] = value;
-        }
+        var value = attribute.value.toString();
+        result[(raw
+                ? '$endName'
+                : '${camelToNormal(headerName)} ${camelToNormal(endName)}')
+            .toString()
+            .trim()] = value ?? '';
       }
     });
 
@@ -141,9 +144,7 @@ class XMP {
     } else {
       // check if it is list
       if (result[key] is List) {
-        if (result[key].indexOf(text) == -1) {
-          result[key].add(text);
-        }
+        result[key].add(text);
       } else {
         var temporaryValue = result[key].toString();
         if (temporaryValue.trim() != text) {
