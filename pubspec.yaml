@@ -1,6 +1,6 @@
 name: xmp
 description: XMP module helps to extract xmp data from images.
-version: 1.0.2
+version: 1.0.3
 homepage: https://github.com/justkawal/xmp
 
 environment:
