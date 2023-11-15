@@ -1,5 +1,12 @@
 part of xmp;
 
+enum ImageType { jpg, jpeg, gif, png, apng }
+
+abstract class MetaData{
+  Map<String, dynamic> extract(Uint8List source, {bool raw = false, ImageType type = ImageType.jpg});
+  Map<String, dynamic> toMap();
+}
+
 class XMP {
   ///
   ///Extracts `XMP Data` from the image
@@ -17,18 +24,32 @@ class XMP {
   /// print(result.toString());
   ///
   ///```
-  static Map<String, dynamic> extract(Uint8List source, {bool raw = false}) {
+  static Map<String, dynamic> extract(Uint8List source, {bool raw = false, ImageType type = ImageType.jpg}) {
+    switch (type) {
+      case ImageType.apng:
+        return ApngMetaData().extract(source, raw: raw);
+      case ImageType.png:
+        return PngMetaData().extract(source, raw: raw);
+      case ImageType.jpeg:
+        return JpegMetaData().extract(source, raw: raw);
+      default:
+        return _defaultExtract(source, raw: raw);
+    }
+  }
+
+  static _defaultExtract(Uint8List source, {bool raw = true}) {
     if (source is! Uint8List) {
       throw Exception('Not a Uint8List');
     } else {
       var result = <String, dynamic>{};
-      var buffer = latin1.decode(source, allowInvalid: false);
-      int offsetBegin = buffer.indexOf(_markerBegin);
+      int offsetBegin = _findIndexOf(source, _markerBegin.codeUnits);
       if (offsetBegin != -1) {
-        int offsetEnd = buffer.indexOf(_markerEnd);
+        int offsetEnd = _findIndexOf(source, _markerEnd.codeUnits, start: offsetBegin);
         if (offsetEnd != -1) {
-          var xmlBuffer =
-              buffer.substring(offsetBegin, offsetEnd + _markerEnd.length);
+          Uint8List xmlBytes =
+          source.sublist(offsetBegin, offsetEnd + _markerEnd.length);
+
+          String xmlBuffer = String.fromCharCodes(xmlBytes);
 
           XmlDocument xml;
           try {
@@ -38,8 +59,10 @@ class XMP {
           }
 
           // First rdf:Description
-          var rdf_Description =
-              xml.descendants.where((node) => node is XmlElement).toList();
+          var rdf_Description = xml.descendants
+              .where((node) => node is XmlElement)
+              .map((node) => node as XmlElement)
+              .toList();
           rdf_Description.forEach((element) {
             _addAttribute(result, element, raw);
           });
@@ -52,7 +75,7 @@ class XMP {
                 tags.forEach((element) {
                   var textList = element.descendants
                       .where((node) =>
-                          node is XmlText && !node.text.trim().isEmpty)
+                  node is XmlText && !node.text.trim().isEmpty)
                       .toList();
                   textList.forEach((text) {
                     _addAttributeList(
@@ -64,12 +87,27 @@ class XMP {
           });
           return result;
         } else {
-          return {'Exception': 'Invalid Data'};
+          return {'Exception': 'XMP marker end not found'};
         }
       } else {
-        return {'Exception': 'Invalid Data'};
+        return {'Exception': 'XMP marker begin not found'};
       }
     }
+  }
+
+  static int _findIndexOf(Uint8List data, List<int> pattern, {int start = 0}) {
+    int j = 0;
+    for (int i = start; i < data.length; i++) {
+      if (data[i] == pattern[j]) {
+        j++;
+        if (j == pattern.length) {
+          return i - j + 1;
+        }
+      } else {
+        j = 0;
+      }
+    }
+    return -1;
   }
 
   static void _addAttribute(
@@ -79,15 +117,15 @@ class XMP {
     var headerName;
 
     if (!raw) {
-      var temporaryElement = element;
-      var temporaryName = temporaryElement.name.toString().toLowerCase();
+      XmlElement? temporaryElement = element;
+      String? temporaryName = temporaryElement.name.toString().toLowerCase();
 
       while (!_envelopeTags.every((element) => element != temporaryName)) {
-        temporaryElement = temporaryElement.parentElement;
+        temporaryElement = temporaryElement?.parentElement;
         if (temporaryElement == null) {
           break;
         }
-        temporaryName = temporaryElement?.name?.toString()?.toLowerCase();
+        temporaryName = temporaryElement.name.toString().toLowerCase();
       }
       headerName = (temporaryElement?.name ?? element.name).toString();
       if (headerName == 'null') {
@@ -105,18 +143,21 @@ class XMP {
                 ? '$endName'
                 : '${camelToNormal(headerName)} ${camelToNormal(endName)}')
             .toString()
-            .trim()] = value ?? '';
+            .trim()] = value;
       }
     });
 
-    element.children.toList().forEach((child) {
+    element.children
+        .where((child) => child is XmlElement)
+        .map((e) => e as XmlElement)
+        .forEach((child) {
       if (child is! XmlText) {
         _addAttribute(result, child, raw);
       }
     });
   }
 
-  static String camelToNormal(String text) {
+  static String camelToNormal(String? text) {
     if (text == null || text.isEmpty) {
       return '';
     }
@@ -133,7 +174,7 @@ class XMP {
       return replace;
     }
 
-    return text.nameCase();
+    return text!.nameCase();
   }
 
   static void _addAttributeList(
@@ -159,3 +200,4 @@ class XMP {
     }
   }
 }
+
