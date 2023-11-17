@@ -270,7 +270,5 @@ void saveFile(String fileName, dynamic exifContent) {
 #### Also checkout our other libraries on: 
   - [Libs](https://www.github.com/justkawal/)
 
-### Donate
-Ooooops, My laptop is **slow**, but I'm not.
-  - [Paypal](https://www.paypal.me/kawal7415)
-  - Not having Paypal account ?? [Join Now](https://www.paypal.com/in/flref?refBy=Pzpaa7qp041602067472432) and both of us could earn **`$10`**
+### Donate ❤️
+Thanks for donating, Your donation goes towards my tuition fees!!
