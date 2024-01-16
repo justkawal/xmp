@@ -3,48 +3,58 @@ import 'dart:io';
 import 'package:xmp/xmp.dart';
 
 void main() {
-  extractJpeg();
   extractJpg();
   extractPng();
   extractApng();
+  extractJpeg();
 }
 
 void extractJpeg() {
-  var image_name = 'ive';
-  var file = File('./example/assets/$image_name.jpeg');
+  var imageName = 'ive';
+  var file = File('./example/assets/$imageName.jpeg');
   var bytes = file.readAsBytesSync();
-  File('./example/result/new_$image_name.txt').writeAsBytesSync(bytes);
-  var xmp = XMP.extract(bytes, raw: true);
-  File('./example/result/new_$image_name.json').writeAsStringSync(jsonEncode(xmp));
+  File('./example/result/new_$imageName.txt').writeAsBytesSync(bytes);
+  try {
+    var xmp = XMP.extract(bytes, raw: true);
+    File('./example/result/new_$imageName.json')
+        .writeAsStringSync(jsonEncode(xmp));
+  } catch (e) {
+    //print('should throw error: $e');
+  }
   var result = XMP.extract(bytes, type: ImageType.jpeg);
-  File('./example/result/new_${image_name}_extractor.json').writeAsStringSync(jsonEncode(result));
+  File('./example/result/new_${imageName}_extractor.json')
+      .writeAsStringSync(jsonEncode(result));
 }
 
 void extractJpg() {
-  var image_name = 'ive_2';
-  var file = File('./example/assets/$image_name.jpg');
+  var imageName = 'ive_2';
+  var file = File('./example/assets/$imageName.jpg');
   var bytes = file.readAsBytesSync();
-  File('./example/result/new_$image_name.txt').writeAsBytesSync(bytes);
+  File('./example/result/new_$imageName.txt').writeAsBytesSync(bytes);
   var xmp = XMP.extract(bytes, raw: true);
-  File('./example/result/new_$image_name.json').writeAsStringSync(jsonEncode(xmp));
+  File('./example/result/new_$imageName.json')
+      .writeAsStringSync(jsonEncode(xmp));
   var result = XMP.extract(bytes);
-  File('./example/result/new_${image_name}_extractor.json').writeAsStringSync(jsonEncode(result));
+  File('./example/result/new_${imageName}_extractor.json')
+      .writeAsStringSync(jsonEncode(result));
 }
 
 void extractPng() {
-  var image_name = 'iam';
-  var file = File('./example/assets/$image_name.png');
+  var imageName = 'iam';
+  var file = File('./example/assets/$imageName.png');
   var bytes = file.readAsBytesSync();
-  File('./example/result/new_$image_name.txt').writeAsBytesSync(bytes);
+  File('./example/result/new_$imageName.txt').writeAsBytesSync(bytes);
   var result = XMP.extract(bytes, type: ImageType.png);
-  File('./example/result/new_${image_name}_extractor.json').writeAsStringSync(jsonEncode(result));
+  File('./example/result/new_${imageName}_extractor.json')
+      .writeAsStringSync(jsonEncode(result));
 }
 
 void extractApng() {
-  var image_name = 'circle_apng';
-  var file = File('./example/assets/$image_name.png');
+  var imageName = 'circle_apng';
+  var file = File('./example/assets/$imageName.png');
   var bytes = file.readAsBytesSync();
-  File('./example/result/new_$image_name.txt').writeAsBytesSync(bytes);
+  File('./example/result/new_$imageName.txt').writeAsBytesSync(bytes);
   var result = XMP.extract(bytes, type: ImageType.apng);
-  File('./example/result/new_${image_name}_extractor.json').writeAsStringSync(jsonEncode(result));
+  File('./example/result/new_${imageName}_extractor.json')
+      .writeAsStringSync(jsonEncode(result));
 }

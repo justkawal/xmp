@@ -21,7 +21,7 @@ class PngMetaData extends MetaData {
     this.height,
     this.lastModified,
     this.gamma,
-    this.textChunks = const [],
+    this.textChunks = const <PngTextChunk>[],
   });
 
   PngMetaData._fromBytes(Uint8List bytes)
@@ -79,7 +79,7 @@ class PngMetaData extends MetaData {
     // PNG 시그니처 확인
     for (int i = 0; i < pngSignature.length; i++) {
       if (bytes[i] != pngSignature[i]) {
-        throw FormatException('Not a PNG file.');
+        throw const FormatException('Not a PNG file.');
       }
     }
 
@@ -93,7 +93,8 @@ class PngMetaData extends MetaData {
     return textChunks;
   }
 
-  static int _readNextChunk(Uint8List bytes, int cursor, List<PngTextChunk> textChunks) {
+  static int _readNextChunk(
+      Uint8List bytes, int cursor, List<PngTextChunk> textChunks) {
     int chunkLength = bytes.buffer.asByteData().getUint32(cursor, Endian.big);
     cursor += 4;
 
@@ -103,17 +104,16 @@ class PngMetaData extends MetaData {
     // tEXt 청크 확인
     if (chunkType == "tEXt") {
       final textData = bytes.sublist(cursor, cursor + chunkLength);
-      final keywordEnd = textData.indexOf(0);  // 첫 번째 null byte 위치
+      final keywordEnd = textData.indexOf(0); // 첫 번째 null byte 위치
       final keyword = String.fromCharCodes(textData.sublist(0, keywordEnd));
       final text = String.fromCharCodes(textData.sublist(keywordEnd + 1));
       textChunks.add(PngTextChunk(keyword, text));
     }
 
-    cursor += chunkLength + 4;  // 청크 데이터와 CRC를 건너뜁니다.
+    cursor += chunkLength + 4; // 청크 데이터와 CRC를 건너뜁니다.
 
     return cursor;
   }
-
 
   @override
   Map<String, dynamic> toMap() {
@@ -122,13 +122,13 @@ class PngMetaData extends MetaData {
       'height': height,
       'lastModified': lastModified?.toIso8601String(),
       'gamma': gamma,
-      'textChunks': textChunks.map((e) => e.keyword + ': ' + e.text).toList(),
+      'textChunks': textChunks.map((e) => '${e.keyword}: ${e.text}').toList(),
     };
   }
 
   @override
-  Map<String, dynamic> extract(Uint8List source, {bool raw = false, ImageType type = ImageType.png}) {
+  Map<String, dynamic> extract(Uint8List source,
+      {bool raw = false, ImageType type = ImageType.png}) {
     return PngMetaData._fromBytes(source).toMap();
   }
 }
-

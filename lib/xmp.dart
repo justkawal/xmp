@@ -1,9 +1,7 @@
 library xmp;
 
 /// imports
-import 'dart:convert';
 import 'dart:typed_data';
-import 'package:archive/archive.dart';
 import 'package:xml/xml.dart';
 import 'package:utility/utility.dart';
 import 'package:xmp/src/apng_meta.dart';

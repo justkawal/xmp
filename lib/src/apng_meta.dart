@@ -120,7 +120,8 @@ class ApngMetaData extends MetaData {
     }
   }
 
-  void _extractCompressedTextMetadata(Uint8List data, Map<String, dynamic> metadata) {
+  void _extractCompressedTextMetadata(
+      Uint8List data, Map<String, dynamic> metadata) {
     if (data[0] == 0) {
       List<int> nullPosition = [];
       for (int i = 1; i < data.length; i++) {
@@ -133,7 +134,8 @@ class ApngMetaData extends MetaData {
       if (nullPosition.isNotEmpty) {
         String key = utf8.decode(data.sublist(1, nullPosition.first));
         Uint8List compressedData = data.sublist(nullPosition.first + 1);
-        List<int> uncompressedData = ZLibDecoder().decodeBytes(compressedData);
+        List<int> uncompressedData =
+            const ZLibDecoder().decodeBytes(compressedData);
         String value = utf8.decode(uncompressedData);
         metadata[key] = value;
       }
@@ -152,16 +154,16 @@ class ApngMetaData extends MetaData {
       String keyword = utf8.decode(data.sublist(0, nullPositions[0]));
       int compressionFlag = data[nullPositions[0] + 1];
       int compressionMethod = data[nullPositions[0] + 2];
-      String languageTag = utf8.decode(
-          data.sublist(nullPositions[0] + 3, nullPositions[1]));
-      String translatedKeyword = utf8.decode(
-          data.sublist(nullPositions[1] + 1, nullPositions[2]));
+      String languageTag =
+          utf8.decode(data.sublist(nullPositions[0] + 3, nullPositions[1]));
+      String translatedKeyword =
+          utf8.decode(data.sublist(nullPositions[1] + 1, nullPositions[2]));
 
       Uint8List textData = data.sublist(nullPositions[2] + 1);
 
       String text;
       if (compressionFlag == 1) {
-        List<int> uncompressedData = ZLibDecoder().decodeBytes(textData);
+        List<int> uncompressedData = const ZLibDecoder().decodeBytes(textData);
         text = utf8.decode(uncompressedData);
       } else {
         text = utf8.decode(textData);
@@ -170,11 +172,13 @@ class ApngMetaData extends MetaData {
       metadata[keyword] = {
         'languageTag': languageTag,
         'translatedKeyword': translatedKeyword,
-        'text': text
+        'text': text,
+        'compressionMethod': compressionMethod,
       };
     }
   }
 
+  @override
   Map<String, dynamic> toMap() {
     return {
       'numFrames': numFrames,
@@ -189,7 +193,8 @@ class ApngMetaData extends MetaData {
   }
 
   @override
-  Map<String, dynamic> extract(Uint8List source, {bool raw = false, ImageType type = ImageType.apng}) {
+  Map<String, dynamic> extract(Uint8List source,
+      {bool raw = false, ImageType type = ImageType.apng}) {
     return _extract(source).toMap();
   }
 

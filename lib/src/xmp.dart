@@ -2,8 +2,9 @@ part of xmp;
 
 enum ImageType { jpg, jpeg, gif, png, apng }
 
-abstract class MetaData{
-  Map<String, dynamic> extract(Uint8List source, {bool raw = false, ImageType type = ImageType.jpg});
+abstract class MetaData {
+  Map<String, dynamic> extract(Uint8List source,
+      {bool raw = false, ImageType type = ImageType.jpg});
   Map<String, dynamic> toMap();
 }
 
@@ -24,7 +25,8 @@ class XMP {
   /// print(result.toString());
   ///
   ///```
-  static Map<String, dynamic> extract(Uint8List source, {bool raw = false, ImageType type = ImageType.jpg}) {
+  static Map<String, dynamic> extract(Uint8List source,
+      {bool raw = false, ImageType type = ImageType.jpg}) {
     switch (type) {
       case ImageType.apng:
         return ApngMetaData().extract(source, raw: raw);
@@ -38,60 +40,57 @@ class XMP {
   }
 
   static _defaultExtract(Uint8List source, {bool raw = true}) {
-    if (source is! Uint8List) {
-      throw Exception('Not a Uint8List');
-    } else {
-      var result = <String, dynamic>{};
-      int offsetBegin = _findIndexOf(source, _markerBegin.codeUnits);
-      if (offsetBegin != -1) {
-        int offsetEnd = _findIndexOf(source, _markerEnd.codeUnits, start: offsetBegin);
-        if (offsetEnd != -1) {
-          Uint8List xmlBytes =
-          source.sublist(offsetBegin, offsetEnd + _markerEnd.length);
+    final result = <String, dynamic>{};
+    final int offsetBegin = _findIndexOf(source, _markerBegin.codeUnits);
+    if (offsetBegin != -1) {
+      int offsetEnd =
+          _findIndexOf(source, _markerEnd.codeUnits, start: offsetBegin);
+      if (offsetEnd != -1) {
+        final Uint8List xmlBytes =
+            source.sublist(offsetBegin, offsetEnd + _markerEnd.length);
 
-          String xmlBuffer = String.fromCharCodes(xmlBytes);
+        final String xmlBuffer = String.fromCharCodes(xmlBytes);
 
-          XmlDocument xml;
-          try {
-            xml = XmlDocument.parse(xmlBuffer);
-          } catch (e) {
-            return {'Exception': e.toString()};
-          }
-
-          // First rdf:Description
-          var rdf_Description = xml.descendants
-              .where((node) => node is XmlElement)
-              .map((node) => node as XmlElement)
-              .toList();
-          rdf_Description.forEach((element) {
-            _addAttribute(result, element, raw);
-          });
-
-          // Other selected known tags
-          [_listingTextTags].forEach((headerTag) {
-            headerTag.forEach((tag) {
-              var tags = xml.findAllElements(tag);
-              if (tags.isNotEmpty) {
-                tags.forEach((element) {
-                  var textList = element.descendants
-                      .where((node) =>
-                  node is XmlText && !node.text.trim().isEmpty)
-                      .toList();
-                  textList.forEach((text) {
-                    _addAttributeList(
-                        raw ? tag : camelToNormal(tag), text.text, result);
-                  });
-                });
-              }
-            });
-          });
-          return result;
-        } else {
-          return {'Exception': 'XMP marker end not found'};
+        late XmlDocument xml;
+        try {
+          xml = XmlDocument.parse(xmlBuffer);
+        } catch (e) {
+          throw Exception('XMP XML parsing error: $e');
         }
+
+        // First rdf:Description
+        final rdfDescription = xml.descendants
+            .whereType<XmlElement>()
+            .map((node) => node)
+            .toList();
+        for (var element in rdfDescription) {
+          _addAttribute(result, element, raw);
+        }
+
+        // Other selected known tags
+        for (var headerTag in [_listingTextTags]) {
+          for (var tag in headerTag) {
+            final tags = xml.findAllElements(tag);
+            if (tags.isNotEmpty) {
+              for (var element in tags) {
+                final textList = element.descendants
+                    .where((node) =>
+                        node is XmlText && node.innerText.trim().isNotEmpty)
+                    .toList();
+                for (var text in textList) {
+                  _addAttributeList(
+                      raw ? tag : camelToNormal(tag), text.innerText, result);
+                }
+              }
+            }
+          }
+        }
+        return result;
       } else {
-        return {'Exception': 'XMP marker begin not found'};
+        throw Exception('XMP marker end not found');
       }
+    } else {
+      throw Exception('XMP marker begin not found');
     }
   }
 
@@ -112,9 +111,9 @@ class XMP {
 
   static void _addAttribute(
       Map<String, dynamic> result, XmlElement element, bool raw) {
-    var attributeList = element.attributes.toList();
+    final attributeList = element.attributes.toList();
 
-    var headerName;
+    late String headerName;
 
     if (!raw) {
       XmlElement? temporaryElement = element;
@@ -134,23 +133,20 @@ class XMP {
       }
     }
 
-    attributeList.forEach((attribute) {
-      var attr = attribute.name.toString();
+    for (var attribute in attributeList) {
+      final attr = attribute.name.toString();
       if (!attr.contains('xmlns:') && !attr.contains('xml:')) {
-        var endName = attribute.name.toString();
-        var value = attribute.value.toString();
+        final endName = attribute.name.toString();
+        final value = attribute.value.toString();
         result[(raw
-                ? '$endName'
+                ? endName
                 : '${camelToNormal(headerName)} ${camelToNormal(endName)}')
             .toString()
             .trim()] = value;
       }
-    });
+    }
 
-    element.children
-        .where((child) => child is XmlElement)
-        .map((e) => e as XmlElement)
-        .forEach((child) {
+    element.children.whereType<XmlElement>().map((e) => e).forEach((child) {
       if (child is! XmlText) {
         _addAttribute(result, child, raw);
       }
@@ -200,4 +196,3 @@ class XMP {
     }
   }
 }
-
